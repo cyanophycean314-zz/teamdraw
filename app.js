@@ -4,7 +4,10 @@ var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 
-server.listen(8080);
+//server.listen(8080); //Not for production
+app.set('port', (process.env.PORT || 8080));
+
+app.use(express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
 	res.sendFile(__dirname + '/index.html');
@@ -14,6 +17,10 @@ app.get('/teamdraw.js', function (req, res) {
 });
 app.get('/share.js', function (req, res) {
 	res.sendFile(__dirname + '/share.js');
+});
+
+app.listen(app.get('port'), function() {
+	console.log('Node app is running on port', app.get('port'));
 });
 
 var usernames = {};
