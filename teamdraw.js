@@ -2,38 +2,43 @@
 //========================================================
 
 context = document.getElementById('shared_canvas').getContext("2d");
-context.fillRect(0,0,200,200);
 
-//Three parallel arrays 
-var clickX = new Array();
-var clickY = new Array();
-var clickDrag = new Array();
+//Three parallel arrays
+var segments = [];
 var paint = false;
+var lastpoint = {x: -1, y: -1};
+var doneloading = true;
 
 function addClick(x,y, dragging = false) {
 	//Records the click for future use!
-	clickX.push(x);
-	clickY.push(y);
-	clickDrag.push(dragging);
+	var newseg = {};
+	if (dragging) {
+		newseg.x1 = lastpoint.x;
+		newseg.y1 = lastpoint.y;
+	} else {
+		newseg.x1 = x -1;
+		newseg.x2 = y;
+	}
+	newseg.x2 = x;
+	newseg.y2 = y;
+	newseg.c = user_color;
+	segments.push(newseg);
+	socket.emit('newseg', segments);
+	redraw();
 }
 
 function redraw() {
 	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-	context.strokeStyle = mycolor;
 	context.lineJoin = "round";
 	context.lineWidth = 5;
 
-	for (var i = 0; i < clickX.length; i++) {
+	for (var i = 0; i < segments.length; i++) {
+		var seg = segments[i];
+		context.strokeStyle = seg.c;
 		context.beginPath();
-		if (clickDrag[i] && i) {
-			//Connect with previous el in list
-			context.moveTo(clickX[i-1], clickY[i-1]);
-		} else {
-			//Start the path right next to the current point
-			context.moveTo(clickX[i]-1, clickY[i]);
-		}
-		context.lineTo(clickX[i], clickY[i]);
+		context.moveTo(seg.x1,seg.y1)
+		context.lineTo(seg.x2,seg.y2);
 		context.closePath();
 		context.stroke();
 	}
@@ -46,15 +51,15 @@ $('#shared_canvas').mousedown(function(e) {
 
 	paint = true;
 	addClick(mouseX, mouseY);
-	redraw();	//Update the screen
 });
 
 $('#shared_canvas').mousemove(function(e) {
 	//Mouse moves across the canvas
 	if (paint) {
 		addClick(e.pageX - this.offsetLeft, e.pageY - this.offsetTop, true);
-		redraw();
 	}
+	lastpoint.x = e.pageX - this.offsetLeft;
+	lastpoint.y = e.pageY - this.offsetTop;
 });
 
 $('#shared_canvas').mouseup(function(e) {

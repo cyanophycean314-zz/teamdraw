@@ -6,6 +6,16 @@ socket.on('connect', function(){
 	socket.emit('adduser');
 });
 
+//listener, receives the user's color and id
+socket.on('welcome', function (data) {
+    // Connection is established, start using the socket
+    alert('Connected!');
+    user_color = data.color;
+    user_id = data.id;
+    segments = data.segs;
+    redraw();
+});
+
 // listener, whenever the server emits 'updatechat', this updates the chat body
 socket.on('updatechat', function (username, data) {
 	$('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
@@ -38,22 +48,11 @@ $(function(){
 	});
 });
 
-/**
- * These are the events that the websocket server will emit
- *
- * When sending messages, make sure the type is set to 'message', or other clients won't receive your data
- * (e.g. socket.emit('message', { ... }); )
- */
-socket.on('welcome', function (color) {
-    // Connection is established, start using the socket
-    alert('Connected!');
-    mycolor = color;
-});
-
-socket.on('update', function (data) {
+socket.on('newseg', function (newsegments) {
     // The 'message' event is emitted whenever another client sends a message
     // Messages are automatically broadcasted to everyone in the room
-    
+    segments = newsegments;
+    redraw();
 });
 
 socket.on('heartbeat', function () {
