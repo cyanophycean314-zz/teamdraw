@@ -17,15 +17,22 @@ app.get('/share.js', function (req, res) {
 });
 
 var usernames = {};
+var colors = {};
+var usercount = 0;
 
 io.sockets.on('connection', function (socket) {
 	socket.on('sendchat', function (data) {
 		io.sockets.emit('updatechat', socket.username, data);
 	});
 
-	socket.on('adduser', function(username){
+	socket.on('adduser', function(){
+		username = "user" + (usercount++).toString();
 		socket.username = username;
 		usernames[username] = username;
+		//Generate random color for new user
+		colors[username] = '#'+Math.random().toString(16).substr(-6);
+
+		socket.emit('welcome', colors[username]);
 		socket.emit('updatechat', 'SERVER', 'you have connected');
 		socket.broadcast.emit('updatechat', 'SERVER', username + ' has connected');
 		io.sockets.emit('updateusers', usernames);

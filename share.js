@@ -3,7 +3,7 @@ var socket = io.connect('localhost:8080');
 // on connection to server, ask for user's name with an anonymous callback
 socket.on('connect', function(){
 	// call the server-side function 'adduser' and send one parameter (value of prompt)
-	socket.emit('adduser', prompt("What's your name?"));
+	socket.emit('adduser');
 });
 
 // listener, whenever the server emits 'updatechat', this updates the chat body
@@ -44,9 +44,10 @@ $(function(){
  * When sending messages, make sure the type is set to 'message', or other clients won't receive your data
  * (e.g. socket.emit('message', { ... }); )
  */
-socket.on('welcome', function () {
+socket.on('welcome', function (color) {
     // Connection is established, start using the socket
     alert('Connected!');
+    mycolor = color;
 });
 
 socket.on('update', function (data) {

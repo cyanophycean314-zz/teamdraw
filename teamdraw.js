@@ -20,7 +20,7 @@ function addClick(x,y, dragging = false) {
 function redraw() {
 	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-	context.strokeStyle = "#df4b26";
+	context.strokeStyle = mycolor;
 	context.lineJoin = "round";
 	context.lineWidth = 5;
 
