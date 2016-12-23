@@ -1,4 +1,4 @@
-var socket = io();
+var socket = io.connect();
 
 // on connection to server, ask for user's name with an anonymous callback
 socket.on('connect', function(){

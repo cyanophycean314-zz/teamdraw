@@ -1,8 +1,9 @@
 var express = require('express');
-var http = require('http');
 var app = express();
+var http = require('http');
 var server = http.createServer(app);
-var io = require('socket.io').listen(server);
+var socketIO = require('socket.io')
+const io = socketIO.listen(server);
 
 //server.listen(8080); //Not for production
 app.set('port', (process.env.PORT || 8080));
@@ -19,7 +20,7 @@ app.get('/share.js', function (req, res) {
 	res.sendFile(__dirname + '/share.js');
 });
 
-app.listen(app.get('port'), function() {
+server.listen(app.get('port'), function() {
 	console.log('Node app is running on port', app.get('port'));
 });
 
