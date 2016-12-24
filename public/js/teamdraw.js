@@ -24,7 +24,8 @@ socket.on('updatechat', function (username, data) {
 socket.on('updateusers', function(data) {
 	$('#users').empty();
 	$.each(data, function(key, value) {
-		$('#users').append('<div>' + key + '</div>');
+		coloredsquare = '<span style="color:' + value + ';">&#x25A0;</span>';
+		$('#users').append('<div>' + coloredsquare + ' ' + key + '</div>');
 	});
 });
 

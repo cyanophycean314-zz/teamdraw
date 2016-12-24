@@ -18,7 +18,6 @@ server.listen(app.get('port'), function() {
 	console.log('Node app is running on port', app.get('port'));
 });
 
-var usernames = {};
 var colors = {};
 var usercount = 0;
 var segments = [];
@@ -30,20 +29,18 @@ io.sockets.on('connection', function (socket) {
 
 	socket.on('adduser', function(){
 		username = "user" + (usercount++).toString();
-		socket.username = username;
-		usernames[username] = username;
 		//Generate random color for new user
 		colors[username] = '#'+Math.random().toString(16).substr(-6);
 
 		socket.emit('welcome', {color:colors[username], id: usercount, segs: segments});
 		socket.emit('updatechat', 'SERVER', 'you have connected');
 		socket.broadcast.emit('updatechat', 'SERVER', username + ' has connected');
-		io.sockets.emit('updateusers', usernames);
+		io.sockets.emit('updateusers', colors);
 	});
 
 	socket.on('disconnect', function(){
-		delete usernames[socket.username];
-		io.sockets.emit('updateusers', usernames);
+		delete colors[socket.username];
+		io.sockets.emit('updateusers', colors);
 		socket.broadcast.emit('updatechat', 'SERVER', socket.username + ' has disconnected');
 	});
 
