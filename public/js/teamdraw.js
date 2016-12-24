@@ -9,7 +9,6 @@ socket.on('connect', function(){
 //listener, receives the user's color and id
 socket.on('welcome', function (data) {
     // Connection is established, start using the socket
-    alert('Connected!');
     user_color = data.color;
     user_id = data.id;
     segments = data.segs;
@@ -46,6 +45,13 @@ $(function(){
 			$('#datasend').focus().click();
 		}
 	});
+
+	//when the client hits the CLEAR button for the canvas button
+	$('#clearbut').click( function () {
+		segments = [];
+		socket.emit('clear');
+		redraw();
+	});
 });
 
 socket.on('newseg', function (newsegments) {
@@ -53,6 +59,11 @@ socket.on('newseg', function (newsegments) {
     // Messages are automatically broadcasted to everyone in the room
     segments = newsegments;
     redraw();
+});
+
+socket.on('clear', function () {
+	segments = [];
+	redraw();
 });
 
 socket.on('heartbeat', function () {
@@ -65,3 +76,80 @@ socket.on('error', function (err) {
     var type = err.type;    // This is the type of error that occurred
     var message = err.message;    // This is a friendly message that should describe the error
 });
+
+//Dynamically draw on a canvas
+//========================================================
+
+canvas = document.getElementById('shared_canvas');
+context = canvas.getContext("2d");
+
+//Three parallel arrays
+var segments = [];
+var paint = false;
+var lastpoint = {x: -1, y: -1};
+var doneloading = true;
+
+function addClick(x,y, dragging = false) {
+	//Records the click for future use!
+	var newseg = {};
+	if (dragging) {
+		newseg.x1 = lastpoint.x;
+		newseg.y1 = lastpoint.y;
+	} else {
+		newseg.x1 = x -1;
+		newseg.x2 = y;
+	}
+	newseg.x2 = x;
+	newseg.y2 = y;
+	newseg.c = user_color;
+	segments.push(newseg);
+	socket.emit('newseg', segments);
+	redraw();
+}
+
+function redraw() {
+	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+
+	context.lineJoin = "round";
+	context.lineWidth = 5;
+
+	for (var i = 0; i < segments.length; i++) {
+		var seg = segments[i];
+		context.strokeStyle = seg.c;
+		context.beginPath();
+		context.moveTo(seg.x1,seg.y1)
+		context.lineTo(seg.x2,seg.y2);
+		context.closePath();
+		context.stroke();
+	}
+}
+
+$('#shared_canvas').mousedown(function(e) {
+	var rect = canvas.getBoundingClientRect();
+	//Mouse comes down for the first time
+	var mouseX = e.pageX - rect.left;
+	var mouseY = e.pageY - rect.top;
+
+	paint = true;
+	addClick(mouseX, mouseY);
+});
+
+$('#shared_canvas').mousemove(function(e) {
+	//Mouse moves across the canvas
+	var rect = canvas.getBoundingClientRect();
+	if (paint) {
+		addClick(e.pageX - rect.left, e.pageY - rect.top, true);
+	}
+	lastpoint.x = e.pageX - rect.left;
+	lastpoint.y = e.pageY - rect.top;
+});
+
+$('#shared_canvas').mouseup(function(e) {
+	//Mouse lifts up, so stop painting
+	paint = false;
+});
+
+$('#shared_canvas').mouseleave(function(e) {
+	//Mouse is off canvas, so stop painting
+	paint = false;
+})

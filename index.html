@@ -1,24 +1,68 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<title> Draw together </title>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-		<script src="/socket.io/socket.io.js"></script>
-		<script type="text/javascript" src="share.js"></script>
-	</head>
-	<body>
-		<!-- psitsmike code -->
-		<div style="float:left;width:100px;border-right:1px solid black;height:300px;padding:10px;overflow:scroll-y;">
-			<b>USERS</b>
-			<div id="users"></div>
-		</div>
-		<div style="float:left;width:300px;height:250px;overflow:scroll-y;padding:10px;">
-			<div id="conversation"></div>
-			<input id="data" style="width:200px;" />
-			<input type="button" id="datasend" value="send" />
-		</div>
+<html lang="en">
+<head>
 
-		<canvas id="shared_canvas" width="800" height="600"></canvas>
-		<script type="text/javascript" src="teamdraw.js"></script>
-	</body>
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+  <meta name="description" content="Collaborative Drawing tool">
+  <meta name="author" content="Kevin Fei">
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="stylesheet" href="css/normalize.css">
+  <link rel="stylesheet" href="css/skeleton.css">
+  <link rel="stylesheet" type="text/css" href="css/teamdraw.css">
+
+  <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="icon" type="image/png" href="images/favicon.png">
+
+  <!-- Scriptin
+  __________________________________________________ -->
+  <title> Draw together </title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+  <!-- Primary Page Layout
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <div class="container" >
+    <div class = "row" style="margin-top: 10%">
+      <h3>Team Draw</h3>
+      Splash away on the canvas!
+    </div>
+    <div class = "row">
+      <canvas id="shared_canvas" width="600" height="400"></canvas>
+      <script type="text/javascript" src="js/teamdraw.js"></script>
+    </div>
+    <div class = "row">
+      <input type="button" id="clearbut" value="clear" />
+    </div>
+
+    <div class="row">
+      <div class="two columns">
+        <b>USERS</b>
+        <div id="users"></div>
+      </div>
+      <div class="ten columns">
+          <div id="conversation"></div>
+          <input id="data" />
+          <input type="button" id="datasend" value="send" />
+      </div>
+    </div>
+  </div>
+
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
 </html>

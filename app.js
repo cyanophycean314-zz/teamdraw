@@ -13,12 +13,6 @@ app.use(express.static(__dirname + '/public'));
 app.get('/', function (req, res) {
 	res.sendFile(__dirname + '/index.html');
 });
-app.get('/teamdraw.js', function (req, res) {
-	res.sendFile(__dirname + '/teamdraw.js');
-});
-app.get('/share.js', function (req, res) {
-	res.sendFile(__dirname + '/share.js');
-});
 
 server.listen(app.get('port'), function() {
 	console.log('Node app is running on port', app.get('port'));
@@ -59,4 +53,11 @@ io.sockets.on('connection', function (socket) {
 		segments = newsegments;
 		socket.broadcast.emit('newseg',newsegments);
 	});
+
+	//If server receives clear request, clear everyone's
+	socket.on('clear', function () {
+		socket.broadcast.emit('clear');
+		segments = [];
+		io.sockets.emit('updatechat', 'SERVER', socket.username + ' cleared the screen');
+	})
 });
