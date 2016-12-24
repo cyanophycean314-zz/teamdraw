@@ -44,6 +44,7 @@ $(function(){
 		if(e.which == 13) {
 			$(this).blur();
 			$('#datasend').focus().click();
+			$('#data').focus();
 		}
 	});
 
