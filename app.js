@@ -5,7 +5,7 @@ var app = express();
 var http = require('http');
 var server = http.createServer(app);
 var socketIO = require('socket.io');
-const io = socketIO.listen(server);
+var io = socketIO.listen(server);
 
 var validator = require('validator');
 

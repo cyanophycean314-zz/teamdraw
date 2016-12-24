@@ -24,6 +24,7 @@ socket.on('heartbeat', function () {
 socket.on('error', function (err) {
     var type = err.type;    // This is the type of error that occurred
     var message = err.message;    // This is a friendly message that should describe the error
+    console.log(err.type + ": " + err.message);
 });
 
 //Chat functionality
@@ -73,6 +74,12 @@ canvas = document.getElementById('shared_canvas');	//Canvas object in HTML. Work
 context = canvas.getContext("2d");					//Drawing element for the canvas
 
 var segments = [];					//Contains all segments (paths) drawn on the screen
+/* segment has properties
+	begpos = {x,y}, beginning of path
+	endpos = {x,y}, end of path
+	w = int, width of line
+	c = hex color, color of line
+*/
 var mode = 1; 						//0 - erase, 1 - paint
 var paint = false; 					//true if mouse is down and new segments are being added
 var lastpoint = {x: -1, y: -1};		//the point where the mouse was one event ago
