@@ -146,6 +146,7 @@ function getMousePos(c, e) {
 
 $('#shared_canvas').mousedown(function(e) {
 	//Mouse comes down for the first time
+	canvas.style.cursor = "cell";
 	mousepos = getMousePos(canvas, e);
 	paint = true;
 	addClick(mousepos.x, mousepos.y);
