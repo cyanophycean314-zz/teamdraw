@@ -18,6 +18,7 @@ socket.on('welcome', function (data) {
 // listener, whenever the server emits 'updatechat', this updates the chat body
 socket.on('updatechat', function (username, data) {
 	$('#conversation').append('<div><b>'+username + ':</b> ' + data + '</div>');
+	$('#conversation').scrollTop(document.getElementById('conversation').scrollHeight);
 });
 
 // listener, whenever the server emits 'updateusers', this updates the username list
@@ -53,6 +54,16 @@ $(function(){
 		segments = [];
 		socket.emit('clear');
 		redraw();
+	});
+
+	//Toggle the eraser button when clicked
+	$('#eraserbut').click( function() {
+		$('#eraserbut').toggleClass('button-primary');
+		if ($('#eraserbut').hasClass('button-primary')) {
+			mode = 2;
+		} else {
+			mode = 1;
+		}
 	});
 });
 
@@ -96,11 +107,12 @@ context = canvas.getContext("2d");
 
 //Three parallel arrays
 var segments = [];
-var paint = false;
+var mode = 1; //0 - none, 1 - paint, 2 - erase
+var paint = false; //true if mouse is down and new segments are being added
 var lastpoint = {x: -1, y: -1};
 var doneloading = true;
 
-function addClick(x,y, dragging = false) {
+function addClick(x, y, m, dragging = false) {
 	//Records the click for future use!
 	var newseg = {};
 	if (dragging) {
@@ -112,7 +124,11 @@ function addClick(x,y, dragging = false) {
 	}
 	newseg.x2 = x;
 	newseg.y2 = y;
-	newseg.c = user_color;
+	if (m == 1) {
+		newseg.c = user_color;
+	} else {
+		newseg.c = '#FFFFFF';
+	}
 	segments.push(newseg);
 	socket.emit('newseg', newseg);
 	redraw();
@@ -137,7 +153,6 @@ function redraw() {
 
 function getMousePos(c, e) {
 	var rect = c.getBoundingClientRect();
-
 	return {
 		x: (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
 		y: (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
@@ -146,17 +161,21 @@ function getMousePos(c, e) {
 
 $('#shared_canvas').mousedown(function(e) {
 	//Mouse comes down for the first time
-	canvas.style.cursor = "cell";
 	mousepos = getMousePos(canvas, e);
 	paint = true;
-	addClick(mousepos.x, mousepos.y);
+	addClick(mousepos.x, mousepos.y, mode);
 });
 
 $('#shared_canvas').mousemove(function(e) {
 	//Mouse moves across the canvas
+	if (mode == 1) {
+		canvas.style.cursor = "cell";
+	} else if (mode == 2) {
+		canvas.style.cursor = "move";
+	}
 	mousepos = getMousePos(canvas, e);
 	if (paint) {
-		addClick(mousepos.x, mousepos.y, true);
+		addClick(mousepos.x, mousepos.y, mode, true);
 	}
 	lastpoint = mousepos;
 });
