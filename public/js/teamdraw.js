@@ -135,24 +135,29 @@ function redraw() {
 	}
 }
 
-$('#shared_canvas').mousedown(function(e) {
-	var rect = canvas.getBoundingClientRect();
-	//Mouse comes down for the first time
-	var mouseX = e.pageX - rect.left;
-	var mouseY = e.pageY - rect.top;
+function getMousePos(c, e) {
+	var rect = c.getBoundingClientRect();
 
+	return {
+		x: (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
+		y: (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+	};
+}
+
+$('#shared_canvas').mousedown(function(e) {
+	//Mouse comes down for the first time
+	mousepos = getMousePos(canvas, e);
 	paint = true;
-	addClick(mouseX, mouseY);
+	addClick(mousepos.x, mousepos.y);
 });
 
 $('#shared_canvas').mousemove(function(e) {
 	//Mouse moves across the canvas
-	var rect = canvas.getBoundingClientRect();
+	mousepos = getMousePos(canvas, e);
 	if (paint) {
-		addClick(e.pageX - rect.left, e.pageY - rect.top, true);
+		addClick(mousepos.x, mousepos.y, true);
 	}
-	lastpoint.x = e.pageX - rect.left;
-	lastpoint.y = e.pageY - rect.top;
+	lastpoint = mousepos;
 });
 
 $('#shared_canvas').mouseup(function(e) {
