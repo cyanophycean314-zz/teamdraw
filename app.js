@@ -33,7 +33,7 @@ io.sockets.on('connection', function (socket) {
 			this.username = users[socket.id].username;
 			io.sockets.emit('updateusers', users);
 			io.sockets.emit('updatechat', 'SERVER', oldname + ' is now ' + socket.username);
-		} else {
+		} else if (data.length > 0) {
 			io.sockets.emit('updatechat', socket.username, validator.escape(data));
 		}
 	});

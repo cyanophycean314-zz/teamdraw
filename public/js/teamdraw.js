@@ -1,12 +1,34 @@
 //Socket forms the basis of our communications
 var socket = io.connect();
 
+//Server Shenanigans
+//==============================================================
+
 // on connection to server, tell server it's ready to add a username
 socket.on('connect', function(){
 	socket.emit('adduser');
 });
 
-//listener, receives the user's color and id as well as any existing paints
+// listener, checks server connectivity with heartbeat every 30s
+var lastbeat;	//ID of the timeout for the function that prints lag. Gets closed upon receiving new heartbeat.
+socket.on('heartbeat', function () {
+    clearTimeout(lastbeat);
+    lastbeat = setTimeout(function() {
+    	$('#status').html('<b>Sorry looking a bit laggy...</b>');
+    }, 1000);	//31 second lag time for 30s heartbeat
+    $('#status').html('Splash away on the canvas!');
+});
+
+// Error messages
+socket.on('error', function (err) {
+    var type = err.type;    // This is the type of error that occurred
+    var message = err.message;    // This is a friendly message that should describe the error
+});
+
+//Chat functionality
+//=======================================================
+
+// listener, receives the user's color and id as well as any existing paints
 socket.on('welcome', function (user_data, segs) {
     user_color = user_data.color;
     user_id = user_data.id;
@@ -18,10 +40,11 @@ socket.on('welcome', function (user_data, segs) {
 socket.on('updatechat', function (username, data) {
 	var convo = $('#conversation');
 	convo.append('<div><b>'+username + ':</b> ' + data + '</div>');
+	//autoscroll
 	convo.scrollTop(convo.prop('scrollHeight'));
 });
 
-// listener, whenever the server emits 'updateusers', this updates the username list
+// listener, whenever the server emits 'updateusers', this updates the username list with colors
 socket.on('updateusers', function(data) {
 	$('#users').empty();
 	$.each(data, function(idnum, user_obj) {
@@ -30,13 +53,116 @@ socket.on('updateusers', function(data) {
 	});
 });
 
-// on load of page
+// listener, whenever server broadcasts a new segment, draw it
+socket.on('newseg', function (newsegment) {
+    segments.push(newsegment);
+    drawseg(newsegment);
+});
+
+// listener, clears the screen upon server request
+socket.on('clear', function () {
+	segments = [];
+	redraw();
+});
+
+//Dynamically draw on a canvas
+//========================================================
+
+canvas = document.getElementById('shared_canvas');	//Canvas object in HTML. Works in Chrome
+context = canvas.getContext("2d");					//Drawing element for the canvas
+
+var segments = [];					//Contains all segments (paths) drawn on the screen
+var mode = 1; 						//0 - erase, 1 - paint
+var paint = false; 					//true if mouse is down and new segments are being added
+var lastpoint = {x: -1, y: -1};		//the point where the mouse was one event ago
+
+//Records the click for future use!
+function addClick(pos, m, dragging = false) {
+	var newseg = {};
+	//If dragging, connect to previous point
+	if (dragging) {
+		newseg.begpos = lastpoint;
+	} else {
+		newseg.begpos = {x: pos.x - 1, y: pos.y};
+	}
+	newseg.endpos = pos;
+	if (m == 1) {
+		newseg.c = user_color;
+	} else {
+		newseg.c = '#FFFFFF';
+	}
+	segments.push(newseg);
+	socket.emit('newseg', newseg);
+	drawseg(newseg);
+}
+
+//Draws a single additional segment to the canvas
+function drawseg(seg) {
+	context.lineJoin = "round";
+	context.lineWidth = 5;
+	context.strokeStyle = seg.c;
+	context.beginPath();
+	context.moveTo(seg.begpos.x, seg.begpos.y)
+	context.lineTo(seg.endpos.x, seg.endpos.y);
+	context.closePath();
+	context.stroke();
+}
+
+//Clears the screen and redraws all the segments
+function redraw() {
+	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+	for (var i = 0; i < segments.length; i++) {
+		drawseg(segments[i]);
+	}
+}
+
+//Returns the mouse position correcting for scrolling and scaling
+function getMousePos(c, e) {
+	var rect = c.getBoundingClientRect();
+	return {
+		x: (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
+		y: (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
+	};
+}
+
+//Mouse is clicked and the painting starts
+$('#shared_canvas').mousedown(function(e) {
+	paint = true;
+	addClick(getMousePos(canvas, e), mode);
+});
+
+//Mouse moves across the canvas
+$('#shared_canvas').mousemove(function(e) {
+	if (mode == 1) {
+		canvas.style.cursor = "cell";	//Drawing cursor
+	} else {
+		canvas.style.cursor = "move";	//Scrubbing cursor
+	}
+	mousepos = getMousePos(canvas, e);
+	if (paint) {
+		addClick(mousepos, mode, true);
+	}
+	lastpoint = mousepos;
+});
+
+//Mouse lifts up, so stop painting
+$('#shared_canvas').mouseup(function(e) {
+	paint = false;
+});
+
+//Mouse is off canvas, so stop painting
+$('#shared_canvas').mouseleave(function(e) {
+	paint = false;
+})
+
+// On page load
+// ================================================================
 $(function(){
 	// when the client clicks SEND
 	$('#datasend').click( function() {
 		var message = $('#data').val();
 		$('#data').val('');
-		// tell server to execute 'sendchat' and send along one parameter
+		// tell server to execute 'sendchat' and send along with message
 		socket.emit('sendchat', message);
 	});
 
@@ -49,145 +175,16 @@ $(function(){
 		}
 	});
 
+	//when the client hits the eraser, toggle modes and appearance.
+	$('#eraserbut').click( function() {
+		$('#eraserbut').toggleClass('button-primary');
+		mode = !mode;
+	});
+
 	//when the client hits the CLEAR button for the canvas button
 	$('#clearbut').click( function () {
 		segments = [];
 		socket.emit('clear');
 		redraw();
 	});
-
-	//Toggle the eraser button when clicked
-	$('#eraserbut').click( function() {
-		$('#eraserbut').toggleClass('button-primary');
-		if ($('#eraserbut').hasClass('button-primary')) {
-			mode = 2;
-		} else {
-			mode = 1;
-		}
-	});
 });
-
-socket.on('newseg', function (newsegment) {
-    // The 'message' event is emitted whenever another client sends a message
-    // Messages are automatically broadcasted to everyone in the room
-    segments.push(newsegment);
-    drawseg(newsegment);
-});
-
-socket.on('clear', function () {
-	segments = [];
-	redraw();
-});
-
-var lastbeat;
-socket.on('heartbeat', function () {
-    // You can listen on this event to make sure your connection is receiving events correctly
-    // The server will emit a heartbeat every 30 seconds to all connected clients
-    clearTimeout(lastbeat);
-    lastbeat = setTimeout(function() {
-    	$('#status').empty();
-    	$('#status').append('Sorry looking a bit laggy...');
-    }, 31000);	//31 second lag time
-    $('#status').empty();
-    $('#status').append('Splash away on the canvas!');
-    //console.log('badump');
-});
-
-socket.on('error', function (err) {
-    // Sometimes things go wrong!
-    var type = err.type;    // This is the type of error that occurred
-    var message = err.message;    // This is a friendly message that should describe the error
-});
-
-//Dynamically draw on a canvas
-//========================================================
-
-canvas = document.getElementById('shared_canvas');
-context = canvas.getContext("2d");
-
-//Three parallel arrays
-var segments = [];
-var mode = 1; //0 - none, 1 - paint, 2 - erase
-var paint = false; //true if mouse is down and new segments are being added
-var lastpoint = {x: -1, y: -1};
-var doneloading = true;
-
-function addClick(x, y, m, dragging = false) {
-	//Records the click for future use!
-	var newseg = {};
-	if (dragging) {
-		newseg.x1 = lastpoint.x;
-		newseg.y1 = lastpoint.y;
-	} else {
-		newseg.x1 = x - 1;
-		newseg.x2 = y;
-	}
-	newseg.x2 = x;
-	newseg.y2 = y;
-	if (m == 1) {
-		newseg.c = user_color;
-	} else {
-		newseg.c = '#FFFFFF';
-	}
-	segments.push(newseg);
-	socket.emit('newseg', newseg);
-	drawseg(newseg);
-}
-
-function drawseg(seg) {
-	context.lineJoin = "round";
-	context.lineWidth = 5;
-	context.strokeStyle = seg.c;
-	context.beginPath();
-	context.moveTo(seg.x1,seg.y1)
-	context.lineTo(seg.x2,seg.y2);
-	context.closePath();
-	context.stroke();
-}
-
-function redraw() {
-	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
-
-	for (var i = 0; i < segments.length; i++) {
-		drawseg(segments[i]);
-	}
-}
-
-function getMousePos(c, e) {
-	var rect = c.getBoundingClientRect();
-	return {
-		x: (e.clientX - rect.left) / (rect.right - rect.left) * canvas.width,
-		y: (e.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height
-	};
-}
-
-$('#shared_canvas').mousedown(function(e) {
-	//Mouse comes down for the first time
-	mousepos = getMousePos(canvas, e);
-	paint = true;
-	addClick(mousepos.x, mousepos.y, mode);
-});
-
-$('#shared_canvas').mousemove(function(e) {
-	//Mouse moves across the canvas
-	if (mode == 1) {
-		canvas.style.cursor = "cell";
-	} else if (mode == 2) {
-		canvas.style.cursor = "move";
-	}
-	mousepos = getMousePos(canvas, e);
-	if (paint) {
-		addClick(mousepos.x, mousepos.y, mode, true);
-	}
-	lastpoint = mousepos;
-});
-
-$('#shared_canvas').mouseup(function(e) {
-	//Mouse lifts up, so stop painting
-	paint = false;
-});
-
-$('#shared_canvas').mouseleave(function(e) {
-	//Mouse is off canvas, so stop painting
-	paint = false;
-})
