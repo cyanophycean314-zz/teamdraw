@@ -20,31 +20,40 @@ server.listen(app.get('port'), function() {
 	console.log('Node app is running on port', app.get('port'));
 });
 
-var colors = {};
+var users = {};
 var usercount = 0;
 var segments = [];
 var validator = require('validator');
 
 io.sockets.on('connection', function (socket) {
 	socket.on('sendchat', function (data) {
-
-		io.sockets.emit('updatechat', socket.username, validator.escape(data));
+		if (data.length > 6 && data.slice(0,6) == "-nick "){
+			users[socket.id].username = validator.escape(data.slice(6));
+			this.username = users[socket.id].username;
+			io.sockets.emit('updateusers', users);
+		} else {
+			io.sockets.emit('updatechat', socket.username, validator.escape(data));
+		}
 	});
 
 	socket.on('adduser', function(){
-		this.username = "user" + (usercount++).toString();
+		this.id = usercount++;
+		users[this.id] = {};
+		users[this.id].id = this.id;
+		users[this.id].username = "user" + (this.id).toString();
+		this.username = users[socket.id].username;
 		//Generate random color for new user
-		colors[this.username] = '#'+Math.random().toString(16).substr(-6);
+		users[this.id].color = '#'+Math.random().toString(16).substr(-6);
 
-		socket.emit('welcome', {color:colors[this.username], id: usercount, segs: segments});
+		socket.emit('welcome', users[this.id], segments);
 		socket.emit('updatechat', 'SERVER', 'you have connected');
-		socket.broadcast.emit('updatechat', 'SERVER', this.username + ' has connected');
-		io.sockets.emit('updateusers', colors);
+		socket.broadcast.emit('updatechat', 'SERVER', users[this.id].username + ' has connected');
+		io.sockets.emit('updateusers', users);
 	});
 
 	socket.on('disconnect', function(){
-		delete colors[socket.username];
-		io.sockets.emit('updateusers', colors);
+		delete users[socket.id];
+		io.sockets.emit('updateusers', users);
 		socket.broadcast.emit('updatechat', 'SERVER', socket.username + ' has disconnected');
 	});
 
