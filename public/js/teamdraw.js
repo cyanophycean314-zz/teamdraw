@@ -15,7 +15,7 @@ socket.on('heartbeat', function () {
     clearTimeout(lastbeat);
     lastbeat = setTimeout(function() {
     	$('#status').html('<b>Sorry looking a bit laggy...</b>');
-    }, 1000);	//31 second lag time for 30s heartbeat
+    }, 31000);
     $('#status').html('Splash away on the canvas!');
 });
 
