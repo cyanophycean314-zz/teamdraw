@@ -39,7 +39,8 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on('adduser', function(){
-		this.id = usercount++;
+		usercount = (usercount + 1) % 100;
+		this.id = usercount;
 		users[this.id] = {};
 		users[this.id].id = this.id;
 		users[this.id].username = "user" + (this.id).toString();
@@ -53,6 +54,7 @@ io.sockets.on('connection', function (socket) {
 		io.sockets.emit('updateusers', users);
 	});
 
+	//User disconnected
 	socket.on('disconnect', function(){
 		delete users[socket.id];
 		io.sockets.emit('updateusers', users);

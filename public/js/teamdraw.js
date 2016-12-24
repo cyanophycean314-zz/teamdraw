@@ -1,14 +1,13 @@
+//Socket forms the basis of our communications
 var socket = io.connect();
 
-// on connection to server, ask for user's name with an anonymous callback
+// on connection to server, tell server it's ready to add a username
 socket.on('connect', function(){
-	// call the server-side function 'adduser' and send one parameter (value of prompt)
 	socket.emit('adduser');
 });
 
-//listener, receives the user's color and id
+//listener, receives the user's color and id as well as any existing paints
 socket.on('welcome', function (user_data, segs) {
-    // Connection is established, start using the socket
     user_color = user_data.color;
     user_id = user_data.id;
     segments = segs;
@@ -17,8 +16,9 @@ socket.on('welcome', function (user_data, segs) {
 
 // listener, whenever the server emits 'updatechat', this updates the chat body
 socket.on('updatechat', function (username, data) {
-	$('#conversation').append('<div><b>'+username + ':</b> ' + data + '</div>');
-	$('#conversation').scrollTop(document.getElementById('conversation').scrollHeight);
+	var convo = $('#conversation');
+	convo.append('<div><b>'+username + ':</b> ' + data + '</div>');
+	convo.scrollTop(convo.prop('scrollHeight'));
 });
 
 // listener, whenever the server emits 'updateusers', this updates the username list
@@ -71,7 +71,7 @@ socket.on('newseg', function (newsegment) {
     // The 'message' event is emitted whenever another client sends a message
     // Messages are automatically broadcasted to everyone in the room
     segments.push(newsegment);
-    redraw();
+    drawseg(newsegment);
 });
 
 socket.on('clear', function () {
@@ -131,23 +131,25 @@ function addClick(x, y, m, dragging = false) {
 	}
 	segments.push(newseg);
 	socket.emit('newseg', newseg);
-	redraw();
+	drawseg(newseg);
+}
+
+function drawseg(seg) {
+	context.lineJoin = "round";
+	context.lineWidth = 5;
+	context.strokeStyle = seg.c;
+	context.beginPath();
+	context.moveTo(seg.x1,seg.y1)
+	context.lineTo(seg.x2,seg.y2);
+	context.closePath();
+	context.stroke();
 }
 
 function redraw() {
 	context.clearRect(0, 0, context.canvas.width, context.canvas.height);
 
-	context.lineJoin = "round";
-	context.lineWidth = 5;
-
 	for (var i = 0; i < segments.length; i++) {
-		var seg = segments[i];
-		context.strokeStyle = seg.c;
-		context.beginPath();
-		context.moveTo(seg.x1,seg.y1)
-		context.lineTo(seg.x2,seg.y2);
-		context.closePath();
-		context.stroke();
+		drawseg(segments[i]);
 	}
 }
 
