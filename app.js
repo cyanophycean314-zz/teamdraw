@@ -38,11 +38,13 @@ io.sockets.on('connection', function (socket) {
 			if (new_name.length > 16) {
 				new_name = new_name.slice(0,16);
 			}
-			users[socket.id].username = new_name;
-			this.username = users[socket.id].username;
+			if (new_name.length > 0) {
+				users[socket.id].username = new_name;
+				this.username = users[socket.id].username;
 
-			io.sockets.emit('updateusers', users);
-			io.sockets.emit('updatechat', 'SERVER', oldname + ' is now ' + socket.username);
+				io.sockets.emit('updateusers', users);
+				io.sockets.emit('updatechat', 'SERVER', oldname + ' is now ' + socket.username);
+			}
 		} else if (data.length > 0) {
 			//Send a message
 			io.sockets.emit('updatechat', socket.username, validator.escape(data));

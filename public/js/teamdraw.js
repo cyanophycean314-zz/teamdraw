@@ -143,9 +143,9 @@ $('#shared_canvas').mousedown(function(e) {
 //Mouse moves across the canvas
 $('#shared_canvas').mousemove(function(e) {
 	if (mode == 1) {
-		canvas.style.cursor = "cell";	//Drawing cursor
+		canvas.style.cursor = "crosshair";	//Drawing cursor
 	} else {
-		canvas.style.cursor = "move";	//Scrubbing cursor
+		canvas.style.cursor = "pointer";		//Scrubbing cursor
 	}
 	mousepos = getMousePos(canvas, e);
 	if (paint) {
