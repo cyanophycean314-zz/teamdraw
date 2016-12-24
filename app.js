@@ -2,18 +2,20 @@ var express = require('express');
 var app = express();
 var http = require('http');
 var server = http.createServer(app);
-var socketIO = require('socket.io')
+var socketIO = require('socket.io');
 const io = socketIO.listen(server);
 
-//server.listen(8080); //Not for production
+var validator = require('validator');
+
+//Set port to local or production
 app.set('port', (process.env.PORT || 8080));
-
+//give access to public files - css, images, js
 app.use(express.static(__dirname + '/public'));
-
+//give home page
 app.get('/', function (req, res) {
 	res.sendFile(__dirname + '/index.html');
 });
-
+//set the ports
 server.listen(app.get('port'), function() {
 	console.log('Node app is running on port', app.get('port'));
 });
@@ -21,10 +23,12 @@ server.listen(app.get('port'), function() {
 var colors = {};
 var usercount = 0;
 var segments = [];
+var validator = require('validator');
 
 io.sockets.on('connection', function (socket) {
 	socket.on('sendchat', function (data) {
-		io.sockets.emit('updatechat', socket.username, data);
+
+		io.sockets.emit('updatechat', socket.username, validator.escape(data));
 	});
 
 	socket.on('adduser', function(){
@@ -57,4 +61,9 @@ io.sockets.on('connection', function (socket) {
 		segments = [];
 		io.sockets.emit('updatechat', 'SERVER', socket.username + ' cleared the screen');
 	})
+
+	//Send out heartbeat
+	setInterval(function() {
+		socket.emit('heartbeat');
+	}, 2000);
 });

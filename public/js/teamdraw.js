@@ -68,9 +68,18 @@ socket.on('clear', function () {
 	redraw();
 });
 
+var lastbeat;
 socket.on('heartbeat', function () {
     // You can listen on this event to make sure your connection is receiving events correctly
     // The server will emit a heartbeat every 30 seconds to all connected clients
+    clearTimeout(lastbeat);
+    lastbeat = setTimeout(function() {
+    	$('#status').empty();
+    	$('#status').append('Sorry looking a bit laggy...');
+    }, 30500);
+    $('#status').empty();
+    $('#status').append('Splash away on the canvas!');
+    //console.log('badump');
 });
 
 socket.on('error', function (err) {
