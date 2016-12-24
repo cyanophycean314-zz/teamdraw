@@ -41,13 +41,17 @@
       <h3>Team Draw</h3>
       <div id = "status">Splash away on the canvas! </div>
     </div>
+
     <div class = "row">
       <canvas id="shared_canvas" width="600" height="400"></canvas>
       <script type="text/javascript" src="js/teamdraw.js"></script>
     </div>
+
     <div class = "row">
-      <input type="button" id="eraserbut" class = "button" value="eraser" />
-      <input type="button" id="clearbut" value="clear" />
+      <input type="button" id="eraserbut" value="eraser" />
+      <input type="button" id="clearbut" value="clear" style="margin-right: 10px" />
+      Change size:
+      <input type="range" id="pensize" min="2" max="7" />
     </div>
 
     <div class="row">
@@ -64,7 +68,8 @@
     </div>
 
     <div class="row" style="margin-top: 2%;margin-bottom: 2%">
-      <div class="acknowledgements">By Kevin Fei, 2016. Built using <a href="http://getskeleton.com/">Skeleton CSS</a>.<br />
+      <div class="acknowledgements">By Kevin Fei, 2016. Source on <a href="https://github.com/cyanophycean314/teamdraw"> Github </a>. Built using <a href="http://getskeleton.com/">Skeleton CSS</a>.<br />
+
       Thanks to <a href="http://www.williammalone.com/articles/create-html5-canvas-javascript-drawing-app/">William Malone</a> and <a href="http://psitsmike.com/2011/09/node-js-and-socket-io-chat-tutorial/">Michael Mukhin</a> for their great tutorials and <a href="https://www.clicktime.com/">ClickTime</a> for inspiration.</div>
     </div>
   </div>

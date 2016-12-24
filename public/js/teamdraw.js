@@ -15,6 +15,7 @@ socket.on('heartbeat', function () {
     clearTimeout(lastbeat);
     lastbeat = setTimeout(function() {
     	$('#status').html('<b>Sorry looking a bit laggy...</b>');
+    	console.log("Heartbeat missed!");
     }, 31000);
     $('#status').html('Splash away on the canvas!');
 });
@@ -77,7 +78,7 @@ var paint = false; 					//true if mouse is down and new segments are being added
 var lastpoint = {x: -1, y: -1};		//the point where the mouse was one event ago
 
 //Records the click for future use!
-function addClick(pos, m, dragging = false) {
+function addClick(pos, m, width, dragging = false) {
 	var newseg = {};
 	//If dragging, connect to previous point
 	if (dragging) {
@@ -86,6 +87,7 @@ function addClick(pos, m, dragging = false) {
 		newseg.begpos = {x: pos.x - 1, y: pos.y};
 	}
 	newseg.endpos = pos;
+	newseg.w = width;
 	if (m == 1) {
 		newseg.c = user_color;
 	} else {
@@ -99,7 +101,7 @@ function addClick(pos, m, dragging = false) {
 //Draws a single additional segment to the canvas
 function drawseg(seg) {
 	context.lineJoin = "round";
-	context.lineWidth = 5;
+	context.lineWidth = seg.w;
 	context.strokeStyle = seg.c;
 	context.beginPath();
 	context.moveTo(seg.begpos.x, seg.begpos.y)
@@ -128,7 +130,7 @@ function getMousePos(c, e) {
 //Mouse is clicked and the painting starts
 $('#shared_canvas').mousedown(function(e) {
 	paint = true;
-	addClick(getMousePos(canvas, e), mode);
+	addClick(getMousePos(canvas, e), mode, $('#pensize').val());
 });
 
 //Mouse moves across the canvas
@@ -140,7 +142,7 @@ $('#shared_canvas').mousemove(function(e) {
 	}
 	mousepos = getMousePos(canvas, e);
 	if (paint) {
-		addClick(mousepos, mode, true);
+		addClick(mousepos, mode, $('#pensize').val(), true);
 	}
 	lastpoint = mousepos;
 });
