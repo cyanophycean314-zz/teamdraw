@@ -17,7 +17,7 @@ socket.on('welcome', function (data) {
 
 // listener, whenever the server emits 'updatechat', this updates the chat body
 socket.on('updatechat', function (username, data) {
-	$('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
+	$('#conversation').append('<div><b>'+username + ':</b> ' + data + '</div>');
 });
 
 // listener, whenever the server emits 'updateusers', this updates the username list
@@ -97,7 +97,7 @@ function addClick(x,y, dragging = false) {
 		newseg.x1 = lastpoint.x;
 		newseg.y1 = lastpoint.y;
 	} else {
-		newseg.x1 = x -1;
+		newseg.x1 = x - 1;
 		newseg.x2 = y;
 	}
 	newseg.x2 = x;

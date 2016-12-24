@@ -3,3 +3,8 @@
 canvas {
 	border: 2px solid black;
 }
+
+.conversation{
+	height: 200px;
+	overflow-y: auto;
+}
