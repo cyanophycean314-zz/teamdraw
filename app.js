@@ -28,9 +28,11 @@ var validator = require('validator');
 io.sockets.on('connection', function (socket) {
 	socket.on('sendchat', function (data) {
 		if (data.length > 6 && data.slice(0,6) == "-nick "){
+			oldname = socket.username;
 			users[socket.id].username = validator.escape(data.slice(6));
 			this.username = users[socket.id].username;
 			io.sockets.emit('updateusers', users);
+			io.sockets.emit('updatechat', 'SERVER', oldname + ' is now ' + socket.username);
 		} else {
 			io.sockets.emit('updatechat', socket.username, validator.escape(data));
 		}
@@ -47,7 +49,7 @@ io.sockets.on('connection', function (socket) {
 
 		socket.emit('welcome', users[this.id], segments);
 		socket.emit('updatechat', 'SERVER', 'you have connected');
-		socket.broadcast.emit('updatechat', 'SERVER', users[this.id].username + ' has connected');
+		socket.broadcast.emit('updatechat', 'SERVER', this.username + ' has connected');
 		io.sockets.emit('updateusers', users);
 	});
 

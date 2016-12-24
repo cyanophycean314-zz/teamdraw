@@ -9,8 +9,6 @@ socket.on('connect', function(){
 //listener, receives the user's color and id
 socket.on('welcome', function (user_data, segs) {
     // Connection is established, start using the socket
-    console.log(user_data);
-    console.log(segs);
     user_color = user_data.color;
     user_id = user_data.id;
     segments = segs;
