@@ -65,5 +65,5 @@ io.sockets.on('connection', function (socket) {
 	//Send out heartbeat
 	setInterval(function() {
 		socket.emit('heartbeat');
-	}, 2000);
+	}, 30000);
 });

@@ -76,7 +76,7 @@ socket.on('heartbeat', function () {
     lastbeat = setTimeout(function() {
     	$('#status').empty();
     	$('#status').append('Sorry looking a bit laggy...');
-    }, 30500);
+    }, 31000);	//31 second lag time
     $('#status').empty();
     $('#status').append('Splash away on the canvas!');
     //console.log('badump');
