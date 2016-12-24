@@ -28,13 +28,13 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	socket.on('adduser', function(){
-		username = "user" + (usercount++).toString();
+		this.username = "user" + (usercount++).toString();
 		//Generate random color for new user
-		colors[username] = '#'+Math.random().toString(16).substr(-6);
+		colors[this.username] = '#'+Math.random().toString(16).substr(-6);
 
-		socket.emit('welcome', {color:colors[username], id: usercount, segs: segments});
+		socket.emit('welcome', {color:colors[this.username], id: usercount, segs: segments});
 		socket.emit('updatechat', 'SERVER', 'you have connected');
-		socket.broadcast.emit('updatechat', 'SERVER', username + ' has connected');
+		socket.broadcast.emit('updatechat', 'SERVER', this.username + ' has connected');
 		io.sockets.emit('updateusers', colors);
 	});
 
@@ -45,10 +45,10 @@ io.sockets.on('connection', function (socket) {
 	});
 
 	//If server gets a new segment, then give them to everyone.
-	socket.on('newseg', function (newsegments) {
+	socket.on('newseg', function (newsegment) {
 		//Don't gotta do nothing
-		segments = newsegments;
-		socket.broadcast.emit('newseg',newsegments);
+		segments.push(newsegment);
+		socket.broadcast.emit('newseg',newsegment);
 	});
 
 	//If server receives clear request, clear everyone's

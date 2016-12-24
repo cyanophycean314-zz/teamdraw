@@ -55,10 +55,10 @@ $(function(){
 	});
 });
 
-socket.on('newseg', function (newsegments) {
+socket.on('newseg', function (newsegment) {
     // The 'message' event is emitted whenever another client sends a message
     // Messages are automatically broadcasted to everyone in the room
-    segments = newsegments;
+    segments.push(newsegment);
     redraw();
 });
 
@@ -104,7 +104,7 @@ function addClick(x,y, dragging = false) {
 	newseg.y2 = y;
 	newseg.c = user_color;
 	segments.push(newseg);
-	socket.emit('newseg', segments);
+	socket.emit('newseg', newseg);
 	redraw();
 }
 
